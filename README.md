@@ -11,7 +11,7 @@ Application for searching github user repositories.
 A simple application for searching user repositories on Github.
 Thanks to this application, we can easily search for all user repositories that are not forks.
 We get the name of the repository, who is the owner,
-the name of the branch and the last commit saved in sha
+the name of the branch and the last commit saved in sha.
 ## Features
 
 *  Search user repositories
