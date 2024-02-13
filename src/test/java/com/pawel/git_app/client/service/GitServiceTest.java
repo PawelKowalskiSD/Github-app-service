@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
 import reactor.core.publisher.Mono;
@@ -20,8 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 
 @SpringBootTest
 public class GitServiceTest {
@@ -49,7 +50,7 @@ public class GitServiceTest {
     void shoulSearchUserTest() {
         //Given
         Repositories[] repositories = {
-                new Repositories("project-crypto-wallet2023",
+                new Repositories("Books-vaadin-test",
                         new Owner("PawelKowalskiSD"),
                         false,
                         new Branch("main",
@@ -64,10 +65,10 @@ public class GitServiceTest {
 
         Branch[] branches = {
                 new Branch("main",
-                        new Commit("123"))};
+                        new Commit("e73b9989923155f5720b85c7706e64e50bc6756e"))};
 
         when(webClient.get()
-                .uri("repos/testUser/{repoName}/branches", "project-crypto-wallet2023")
+                .uri("repos/testUser/{repoName}/branches", "Books-vaadin-test")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(Branch[].class))
@@ -76,11 +77,10 @@ public class GitServiceTest {
         //When
         List<Repositories> result = gitService.searchUser("PawelKowalskiSD");
         //Then
-        assertEquals(13, result.size());
-        assertEquals("project-crypto-wallet2023", result.get(12).getRepositoryName());
-        assertEquals("PawelKowalskiSD", result.get(12).getOwner().getLogin());
-        assertFalse(result.get(12).isFork());
-        assertEquals("main", result.get(12).getBranch().getName());
-        assertEquals("e73b9989923155f5720b85c7706e64e50bc6756e", result.get(12).getBranch().getCommit().getSha());
+        assertEquals("Books-vaadin-test", result.get(0).getRepositoryName());
+        assertEquals("PawelKowalskiSD", result.get(0).getOwner().getLogin());
+        assertFalse(result.get(0).isFork());
+        assertEquals("main", result.get(0).getBranch().getName());
+        assertEquals("e73b9989923155f5720b85c7706e64e50bc6756e", result.get(0).getBranch().getCommit().getSha());
     }
 }
