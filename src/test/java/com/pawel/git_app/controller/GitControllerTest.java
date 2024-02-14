@@ -48,9 +48,9 @@ class GitControllerTest {
         //When
         List<RepositoriesDto> result = gitController.getUserRepositories(username).getBody();
         //Then
-        assertEquals("project-crypto-wallet2023", Objects.requireNonNull(result).get(0).getRepositoryName());
-        assertEquals("PawelKowalskiSD", Objects.requireNonNull(result).get(0).getOwner().getLogin());
-        assertEquals("main", Objects.requireNonNull(result).get(0).getBranch().getBranchName());
-        assertEquals("ff9627d2b314d02e9c2452b5afc850ca1480b542", Objects.requireNonNull(result).get(0).getBranch().getLastCommitSha().getSha());
+        assertEquals("project-crypto-wallet2023", Objects.requireNonNull(result).get(0).repositoryName());
+        assertEquals("PawelKowalskiSD", Objects.requireNonNull(result).get(0).owner().login());
+        assertEquals("main", Objects.requireNonNull(result).get(0).branch().branchName());
+        assertEquals("ff9627d2b314d02e9c2452b5afc850ca1480b542", Objects.requireNonNull(result).get(0).branch().lastCommitSha().sha());
     }
 }
