@@ -15,10 +15,10 @@ public class DtoMapper {
     public List<RepositoriesDto> mapToRepositoryDto(List<Repositories> repositories) {
         return repositories.stream()
                 .map(s -> new RepositoriesDto(
-                        s.getRepositoryName(),
-                        new OwnerDto(s.getOwner().getLogin()),
-                        new BranchDto(s.getBranch().getName(),
-                                new CommitDto(s.getBranch().getCommit().getSha()))))
+                        s.name(),
+                        new OwnerDto(s.owner().login()),
+                        new BranchDto(s.branch().name(),
+                                new CommitDto(s.branch().commit().sha()))))
                 .collect(Collectors.toList());
     }
 

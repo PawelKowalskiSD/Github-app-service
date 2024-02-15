@@ -47,7 +47,7 @@ public class GitService {
     private static String getRepositoryName(Repositories[] responseClient) {
         String repoName = "";
         for (Repositories abc : Objects.requireNonNull(responseClient)) {
-            repoName = abc.getRepositoryName();
+            repoName = abc.name();
         }
         return repoName;
     }
@@ -61,17 +61,17 @@ public class GitService {
     }
 
     private static Branch getBranch(Branch[] responseBranches) {
-        Branch branch = new Branch();
+        Branch branch = null;
         for (Branch bra : Objects.requireNonNull(responseBranches)) {
-            branch = new Branch(bra.getName(), bra.getCommit());
+            branch = bra;
         }
         return branch;
     }
 
     private static List<Repositories> displayResult(Repositories[] responseClient, Branch responseBranch) {
         return Arrays.stream(Objects.requireNonNull(responseClient))
-                .filter(f -> !f.isFork())
-                .map(s -> new Repositories(s.getRepositoryName(), s.getOwner(), s.isFork(), responseBranch))
+                .filter(f -> !f.fork())
+                .map(s -> new Repositories(s.name(), s.owner(), false, responseBranch))
                 .collect(Collectors.toList());
     }
 }
