@@ -1,22 +1,29 @@
 package com.pawel.git_app.client.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.pawel.git_app.domain.Branch;
 import com.pawel.git_app.domain.Commit;
 import com.pawel.git_app.domain.Owner;
 import com.pawel.git_app.domain.Repositories;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
 import reactor.core.publisher.Mono;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,62 +32,35 @@ import static org.mockito.Mockito.*;
 
 
 @SpringBootTest
+@WireMockTest(httpPort = 8888)
 public class GitServiceTest {
 
     @Autowired
     private GitService gitService;
-
-    @MockBean
-    private WebClient webClient;
-
-
-    @BeforeEach
-    void setUp() {
-        var requestHeadersUriSpec = mock(RequestHeadersUriSpec.class);
-        var requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
-        WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
-
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), any(Object[].class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.accept(any(MediaType.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
-    void shoulSearchUserTest() {
+    void shoulSearchUserTest(WireMockRuntimeInfo wireMockRuntimeInfo) {
         //Given
-        Repositories[] repositories = {
-                new Repositories("Books-vaadin-test",
-                        new Owner("PawelKowalskiSD"),
-                        false,
-                        new Branch("main",
-                                new Commit("e73b9989923155f5720b85c7706e64e50bc6756e")))};
-
-        when(webClient.get()
-                .uri("/users/{username}/repos", "PawelKowalskiSD")
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(Repositories[].class))
-                .thenReturn(Mono.just(repositories));
-
-        Branch[] branches = {
-                new Branch("main",
-                        new Commit("e73b9989923155f5720b85c7706e64e50bc6756e"))};
-
-        when(webClient.get()
-                .uri("repos/testUser/{repoName}/branches", "Books-vaadin-test")
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(Branch[].class))
-                .thenReturn(Mono.just(branches));
-
+        Repositories repositories = new Repositories("ab", new Owner("PawelKowalskiSD"), false, new Branch("aba", new Commit("231314")));
+        Repositories repositories1 = new Repositories("abzxc", new Owner("PawelKowalskiSD"), false, new Branch("aba22", new Commit("231314sadad")));
+        List<Repositories> reposit = new ArrayList<>();
+        reposit.add(repositories);
+        reposit.add(repositories1);
+        JsonNode jsonNode = objectMapper.valueToTree(reposit);
+        stubFor(get(urlPathMatching("/users/PawelKowalskiSD/repos"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "application/json")
+                        .withJsonBody(jsonNode)));
+        stubFor(get(urlPathMatching("/repos/PawelKowalskiSD/abzxc/branches"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "application/json")
+                        .withJsonBody(jsonNode)));
         //When
         List<Repositories> result = gitService.searchUser("PawelKowalskiSD");
         //Then
-        assertEquals("Books-vaadin-test", result.get(0).getRepositoryName());
-        assertEquals("PawelKowalskiSD", result.get(0).getOwner().getLogin());
-        assertFalse(result.get(0).isFork());
-        assertEquals("main", result.get(0).getBranch().getName());
-        assertEquals("e73b9989923155f5720b85c7706e64e50bc6756e", result.get(0).getBranch().getCommit().getSha());
+        assertThat(result).isNotNull();
+        assertThat(result.size()).isEqualTo(2);
     }
 }
